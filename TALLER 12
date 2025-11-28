@@ -1,0 +1,114 @@
+TALLER 12 
+section .data
+; Estructura de Fecha (DD/MM/YYYY)
+FECHA DB 10, 05, 1995 ; DÍA=10 (Offset 0), MES=05 (Offset 1),
+AÑO=1995 (Offset 2, 3)
+; Usar DW (Define Word) para el año es más preciso:
+FECHA_CORRECTA DB 10, 05 ; DD (1 byte), MM (1 byte)
+FECHA_CORRECTA_YEAR DW 1995 ; YYYY (2 bytes)
+
+section .data
+; Estructura de Dirección Completa
+DIRECCION_CALLE DB "Av. de los Encinos", 0
+NUM_CASA DW 459
+COLONIA DB "Residencial Baja", 0
+section .data
+CORREO DB "usuario@uabc.edu.mx", 0
+CURP DB "GARC800101HDFLLL09", 0
+
+;
+======================================================
+=
+; DOCUMENTACIÓN DEL CÓDIGO (NASM/Linux)
+;
+======================================================
+=
+section .data
+; ARREGLO: Contiene los números a sumar (7, 14, 21).
+nums_array db 7, 14, 21
+; TEMPORAL: Buffer para almacenar el resultado ASCII ("42" + salto
+de línea + null).
+temp_buffer db '00', 0x0A, 0
+; MACRO: 'imprimir_num'
+; Objetivo: Llama al sistema 'write' para imprimir un buffer.
+; %1 (dirección del buffer), %2 (longitud).
+%macro imprimir_num 2
+mov eax, 4 ; Syscall number para 'write'
+mov ebx, 1 ; stdout
+mov ecx, %1 ; Dirección del buffer
+mov edx, %2 ; Longitud
+int 0x80 ; Ejecuta syscall
+
+%endmacro
+; MACRO: 'SUMA3_ARR'
+; Objetivo: Sumar los 3 primeros elementos de un arreglo de bytes.
+; %1 (etiqueta del arreglo).
+%macro SUMA3_ARR 1
+; Inicia la suma con el primer elemento (índice 0) en AL.
+mov al, [%1 + 0]
+; Suma el segundo elemento (índice 1).
+add al, [%1 + 1]
+; Suma el tercer elemento (índice 2).
+add al, [%1 + 2]
+; Resultado binario (42) queda en AL.
+%endmacro
+section .text
+global _start
+_start:
+; 1. LLAMADA A LA MACRO: Realiza la suma (AL = 42).
+SUMA3_ARR nums_array
+; 2. CONVERSIÓN DE BINARIO A ASCII
+mov ah, 0 ; Limpia AH (hace AX = 42).
+mov bl, 10 ; Divisor
+div bl ; AX / 10. Cociente (4) en AL, Residuo (2) en AH.
+; Convierte la unidad (Residuo en AH) a ASCII ('2') y guarda en el
+buffer.
+add ah, '0'
+mov [temp_buffer + 1], ah
+; Convierte la decena (Cociente en AL) a ASCII ('4') y guarda en el
+buffer.
+add al, '0'
+mov [temp_buffer], al
+; 3. IMPRESIÓN
+imprimir_num temp_buffer, 3 ; Imprime "42\n".
+
+; 4. SALIDA
+mov eax, 1 ; Syscall 'exit'
+xor ebx, ebx
+int 0x80
+
+;
+======================================================
+=
+; ESTRUCTURA X/X/X Y MACRO DE SUMA (NASM x86)
+;
+======================================================
+=
+section .data
+; ESTRUCTURA TIPO X/X/X
+; Los tres elementos (X1=15, X2=25, X3=30) son números de 8 bits.
+ESTRUCTURA_X_X_X DB 15, 25, 30
+; Suma total: 70.
+; MACRO: SUMA_ESTRUCTURA_3
+; Objetivo: Suma los 3 elementos del arreglo de bytes pasado en %1.
+%macro SUMA_ESTRUCTURA_3 1
+; Carga el primer elemento (X1) en AL.
+mov al, [%1 + 0]
+; Suma el segundo elemento (X2) a AL (Offset 1).
+add al, [%1 + 1]
+
+; Suma el tercer elemento (X3) a AL (Offset 2).
+add al, [%1 + 2]
+; El resultado (70) queda en el registro AL.
+%endmacro
+section .text
+global _start
+_start:
+; LLAMADA A LA MACRO: Ejecuta la suma de la estructura.
+SUMA_ESTRUCTURA_3 ESTRUCTURA_X_X_X
+; AL ahora contiene 70.
+; Terminación del programa
+mov eax, 1 ; Syscall 'exit'
+xor ebx, ebx
+int 0x80
+
