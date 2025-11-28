@@ -1,0 +1,164 @@
+TALLER 5 
+section .data
+buf db 0 ; espacio para un carácter
+len equ 1
+section .text
+global _start
+_start:
+; Generar y mostrar ‘A’ (ASCII 65)
+xor eax, eax
+xor ebx, ebx
+xor ecx, ecx
+xor edx, edx
+; construir 65 con sumas: por ejemplo, 50 + 10 + 5
+mov al, 50 ; al = 50
+add al, 10 ; al = 60
+add al, 5 ; al = 65 → ‘A’
+mov [buf], al
+
+; sys_write(1, buf, 1)
+mov eax, 4 ; sys_write
+mov ebx, 1 ; stdout
+mov ecx, buf
+mov edx, len
+int 0x80
+; Saltar nueva línea si quieres:
+; mov al, 10
+; mov [buf], al
+; mov eax, 4
+; mov ebx, 1
+; mov ecx, buf
+; mov edx, len
+; int 0x80
+; Generar y mostrar ‘:’ (ASCII 58)
+; Partimos de lo que ya tenemos o empezamos de cero
+xor eax, eax
+mov al, 50
+add al, 8 ; al = 58
+mov [buf], al
+mov eax, 4
+mov ebx, 1
+mov ecx, buf
+mov edx, len
+int 0x80
+; Generar y mostrar ‘=’ (ASCII 61)
+xor eax, eax
+
+mov al, 50
+add al, 11 ; al = 61
+mov [buf], al
+mov eax, 4
+mov ebx, 1
+mov ecx, buf
+mov edx, len
+int 0x80
+; Generar y mostrar ‘?’ (ASCII 63)
+xor eax, eax
+mov al, 50
+add al, 13 ; al = 63
+mov [buf], al
+mov eax, 4
+mov ebx, 1
+mov ecx, buf
+mov edx, len
+int 0x80
+; Generar y mostrar ‘_’ (ASCII 95)
+xor eax, eax
+mov al, 50
+add al, 45 ; al = 95
+mov [buf], al
+mov eax, 4
+mov ebx, 1
+mov ecx, buf
+mov edx, len
+
+int 0x80
+; Finalmente, salir
+mov eax, 1
+xor ebx, ebx
+int 0x80
+
+B.
+section .data
+buf db 0 ; espacio para un carácter
+len equ 1
+section .text
+global _start
+_start:
+; Imprimir 'B' (ASCII 66)
+xor eax, eax
+mov al, 70 ; empezamos en 70
+sub al, 4 ; 70 - 4 = 66
+mov [buf], al
+mov eax, 4 ; sys_write
+mov ebx, 1 ; stdout
+mov ecx, buf
+mov edx, len
+int 0x80
+; Imprimir 'x' (ASCII 120)
+mov al, 130 ; empezamos en 130
+sub al, 10 ; 130 - 10 = 120
+mov [buf], al
+
+mov eax, 4
+mov ebx, 1
+mov ecx, buf
+mov edx, len
+int 0x80
+; Imprimir '+' (ASCII 43)
+mov al, 50
+sub al, 7 ; 50 - 7 = 43
+mov [buf], al
+mov eax, 4
+mov ebx, 1
+mov ecx, buf
+mov edx, len
+int 0x80
+; Imprimir ''' (ASCII 39)
+mov al, 45
+sub al, 6 ; 45 - 6 = 39
+mov [buf], al
+mov eax, 4
+mov ebx, 1
+mov ecx, buf
+mov edx, len
+int 0x80
+; Imprimir '{' (ASCII 123)
+mov al, 130
+sub al, 7 ; 130 - 7 = 123
+mov [buf], al
+
+mov eax, 4
+mov ebx, 1
+mov ecx, buf
+mov edx, len
+int 0x80
+; Salir
+mov eax, 1
+xor ebx, ebx
+int 0x80
+1.
+section .data
+buf db 0 ; Buffer para almacenar el carácter
+len equ 1
+section .text
+global _start
+_start:
+; Construir el carácter 'A' usando solo sumas
+xor eax, eax ; Limpiar registro eax
+mov al, 50 ; al = 50
+add al, 10 ; al = 60
+add al, 5 ; al = 65 ('A')
+mov [buf], al ; Guardar en buffer
+; Llamada al sistema para escribir en pantalla (stdout)
+mov eax, 4 ; sys_write
+mov ebx, 1 ; descriptor stdout
+mov ecx, buf ; dirección del buffer
+mov edx, len ; longitud = 1 byte
+
+int 0x80 ; interrupción para llamada al sistema
+; Salir del programa
+mov eax, 1 ; sys_exit
+xor ebx, ebx ; código 0
+int 0x80
+
