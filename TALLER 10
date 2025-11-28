@@ -1,0 +1,34 @@
+TALLER 10 
+section .data
+char db 0
+newline db 10
+
+section .text
+global _start
+_start:
+mov al, 0x19 ; valor base
+shl al, 1 ; usa SHL
+ror al, 1 ; usa ROR
+shl al, 2 ; otro SHL
+rol al, 1 ; usa ROL
+shr al, 1 ; usa SHR
+or al, 0x03 ; ajusta a 0x67 ('g')
+
+mov [char], al
+
+mov eax, 4
+mov ebx, 1
+mov ecx, char
+mov edx, 1
+
+int 0x80
+
+mov eax, 4
+mov ebx, 1
+mov ecx, newline
+mov edx, 1
+int 0x80
+
+mov eax, 1
+xor ebx, ebx
+int 0x80
