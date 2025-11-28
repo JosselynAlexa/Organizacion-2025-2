@@ -1,0 +1,258 @@
+TALLER 8
+; Supongamos que los números ya están cargados en EAX (Num1) y
+EBX (Num2)
+
+; Comparación para Igualdad/Mayor/Menor
+cmp eax, ebx ; Compara Num1 (EAX) con Num2 (EBX)
+je numeros_iguales ; Salta si Num1 == Num2 (ZF=1)
+
+; Si no son iguales, verifica si EAX es mayor (Num1 > Num2)
+jg num1_es_mayor ; Salta si Num1 > Num2 (salto 'firmado' usando SF,
+OF, ZF)
+
+; Si no son iguales Y no es mayor, entonces es menor (Num1 < Num2)
+; JLE/JL/JNL se usarían si hubiese que saltar a una etiqueta, pero en
+este caso es el flujo por defecto
+jmp num1_es_menor
+
+; --- Etiquetas de Proceso de Comparación ---
+numeros_iguales:
+; (Código para imprimir "Son Iguales")
+;
+jmp verificar_negativo ; Saltar a la verificación de signo
+
+num1_es_mayor:
+; (Código para imprimir "Num1 es Mayor que Num2")
+;
+jmp verificar_negativo ; Saltar a la verificación de signo
+
+num1_es_menor:
+; (Código para imprimir "Num1 es Menor que Num2")
+;
+
+jmp verificar_negativo ; Saltar a la verificación de signo
+
+; --- Verificación de Negatividad ---
+verificar_negativo:
+; Verifica si el primer número es negativo (bit más significativo = 1)
+test eax, eax ; AND de EAX consigo mismo. Solo ajusta las
+banderas (incluido SF).
+js num1_es_negativo; Salta si el resultado de la operación (el valor
+de EAX) es negativo (SF=1)
+
+; Si llega aquí, Num1 no es negativo. Podríamos revisar Num2 de
+forma similar.
+; test ebx, ebx
+; js num2_es_negativo
+
+jmp fin_programa
+
+num1_es_negativo:
+; (Código para imprimir "Uno o ambos números son negativos")
+;
+jmp fin_programa
+
+fin_programa:
+; (Terminar el programa)
+
+; Supongamos que el número ya está cargado en EAX
+
+test eax, eax ; Realiza EAX AND EAX. Solo ajusta ZF y SF.
+
+jz es_cero ; Salta si el resultado es cero (ZF=1).
+
+js es_negativo ; Si no es cero, salta si es negativo (SF=1).
+
+; Si no es cero Y no es negativo, entonces es positivo (flujo por defecto)
+jmp es_positivo
+
+es_cero:
+; (Código para imprimir "El número es CERO")
+jmp fin_programa
+
+es_negativo:
+; (Código para imprimir "El número es NEGATIVO")
+jmp fin_programa
+
+es_positivo:
+; (Código para imprimir "El número es POSITIVO")
+jmp fin_programa
+
+; Supongamos que el número ya está cargado en EAX
+; Necesitamos aislar el bit menos significativo para paridad
+
+; Opción A: Usar una operación que fuerce la paridad sobre el byte bajo
+(AL)
+; Para un número impar, el bit 0 está en 1.
+; Para un número par, el bit 0 está en 0.
+; La bandera PF no funciona directamente como par/impar para el valor.
+; Se requiere una operación lógica para ajustar PF correctamente.
+
+; Ejemplo para un byte (AL):
+mov al, byte [el_numero]
+
+; La instrucción TEST ajusta los flags. La PF se basa en el resultado.
+test al, 0x01 ; TEST AL con 1. El resultado es 0 si AL es par, 1 si AL
+es impar.
+
+; Sin embargo, la PF solo refleja la paridad de los bits 1s del
+
+resultado (0 o 1).
+
+; **MEJOR ENFOQUE:** Si el problema requiere usar *solamente* PF
+para paridad matemática,
+; la arquitectura x86 lo complica, ya que PF se aplica al resultado binario
+(paridad de bits '1').
+; Si asumimos que la instrucción `TEST` o `CMP` establece PF con
+*paridad de bits* del byte bajo:
+; Paridad PAR (PF=1): número par de bits 1s.
+; Paridad IMPAR (PF=0): número impar de bits 1s.
+
+; Si el valor binario de un número de 8 bits (Byte) tiene un número PAR
+de bits '1':
+mov al, byte [el_numero]
+test al, al ; TEST de AL consigo mismo. Ajusta PF basado en AL.
+
+jp paridad_par ; Salta si Parity Flag (PF) es 1 (Paridad Par).
+
+; Si no saltó, PF es 0 (Paridad Impar)
+jmp paridad_impar
+
+paridad_par:
+; (Código para imprimir "El número tiene paridad de bits PAR")
+; En este contexto, **NO significa necesariamente que el número sea
+matemáticamente par/impar.**
+; **¡ADVERTENCIA!** En ensamblador x86, para determinar si un
+número es par/impar *matemáticamente*,
+; la técnica estándar es verificar el **bit 0** con `TEST EAX, 1` y saltar
+por **ZF**.
+jmp fin_programa
+
+paridad_impar:
+; (Código para imprimir "El número tiene paridad de bits IMPAR")
+jmp fin_programa
+
+; Supongamos que Num1 está en EAX, Num2 en EBX
+
+add eax, ebx ; Suma EAX + EBX, el resultado en EAX. Ajusta la
+bandera OF.
+
+jo hubo_overflow ; Salta si el resultado está fuera del rango de 32 bits
+con signo (OF=1).
+
+; Si no hay overflow
+jmp no_hubo_overflow
+
+hubo_overflow:
+; (Código para imprimir "¡ERROR! Se detectó desbordamiento
+(Overflow)")
+jmp fin_programa
+
+no_hubo_overflow:
+; (Código para imprimir "Suma exitosa, sin desbordamiento.")
+; (EAX contiene el resultado de la suma)
+jmp fin_programa
+
+; Supongamos que Num1 está en EAX, Num2 en EBX
+
+add eax, ebx ; Suma EAX + EBX, el resultado en EAX. Ajusta la
+bandera CF.
+
+jc hubo_acarreo ; Salta si hubo un acarreo saliendo del bit más
+significativo (bit 31) (CF=1).
+
+; Si no hubo acarreo
+jmp no_hubo_acarreo
+
+hubo_acarreo:
+; (Código para imprimir "Se generó un acarreo (Carry Flag = 1)")
+jmp fin_programa
+
+no_hubo_acarreo:
+; (Código para imprimir "No se generó acarreo (Carry Flag = 0)")
+jmp fin_programa
+
+; Inicializar: EAX es el candidato a 'max', EDX es el candidato a 'min'
+mov edx, eax ; Asume que EAX es el mínimo inicial
+mov esi, eax ; Asume que EAX es el máximo inicial
+
+; --- Encontrar el MÍNIMO ---
+
+; Comparar Mínimo (EDX) vs Num2 (EBX)
+cmp edx, ebx
+jl min_vs_num3 ; Si MIN < Num2, no hacemos nada (salta)
+mov edx, ebx ; Si Num2 < MIN, actualiza MIN = Num2
+
+min_vs_num3:
+; Comparar Mínimo (EDX) vs Num3 (ECX)
+cmp edx, ecx
+jl min_encontrado ; Si MIN < Num3, no hacemos nada (salta)
+mov edx, ecx ; Si Num3 < MIN, actualiza MIN = Num3
+
+min_encontrado:
+; (EDX ahora contiene el valor mínimo)
+
+; --- Encontrar el MÁXIMO ---
+
+; Comparar Máximo (ESI) vs Num2 (EBX)
+cmp esi, ebx
+jg max_vs_num3 ; Si MAX > Num2, no hacemos nada (salta)
+mov esi, ebx ; Si Num2 > MAX, actualiza MAX = Num2
+
+max_vs_num3:
+; Comparar Máximo (ESI) vs Num3 (ECX)
+cmp esi, ecx
+jg max_encontrado ; Si MAX > Num3, no hacemos nada (salta)
+mov esi, ecx ; Si Num3 > MAX, actualiza MAX = Num3
+
+max_encontrado:
+; (ESI ahora contiene el valor máximo)
+
+; (Código para imprimir EDX (Mínimo) y ESI (Máximo))
+jmp fin_programa
+
+; EAX = Num1, EBX = Num2. Queremos: EAX <= EBX
+
+cmp eax, ebx ; Compara Num1 (EAX) con Num2 (EBX)
+
+jle ordenado_ok ; Salta si Num1 <= Num2 (ya están en orden
+ascendente).
+
+; (Usa los flags SF, OF, ZF para una comparación firmada
+
+de <=)
+
+; Si llega aquí, significa que Num1 > Num2, por lo que se requiere el
+intercambio.
+mov edx, eax ; Guarda Num1 (EAX) temporalmente en EDX
+mov eax, ebx ; Mueve Num2 (EBX) a EAX
+mov ebx, edx ; Mueve el Num1 original (EDX) a EBX
+
+ordenado_ok:
+; (Ahora EAX contiene el menor, EBX contiene el mayor. Los números
+están ordenados.)
+jmp fin_programa
+
+; Inicializar el contador del ciclo
+mov ecx, 10 ; ECX es el contador, lo inicializamos a 10 (para contar
+10 veces, de 0 a 9)
+mov ebx, 0 ; EBX es el valor que imprimiremos (de 0 a 9)
+
+ciclo_conteo:
+; (Código para imprimir el valor actual de EBX)
+; (Aquí iría la syscall sys_write para imprimir EBX)
+
+inc ebx ; Incrementa el valor a imprimir (0, 1, 2, ...)
+
+dec ecx ; Decrementa el contador (ECX). Esta instrucción
+AJUSTA el Zero Flag (ZF).
+
+; Cuando ECX llega a 0, el ZF se activa (ZF=1).
+
+jnz ciclo_conteo; Salta si el resultado de la última operación (DEC)
+NO fue cero (ZF=0).
+
+; Repite el ciclo mientras ECX > 0.
+
+fin_programa:
+; (Terminar el programa)
