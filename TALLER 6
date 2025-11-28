@@ -1,0 +1,60 @@
+TALLER 6 
+section .data
+; Sección para datos inicializados
+valor1 dd 5 ; Define una doble palabra (32 bits) con el valor
+5
+valor2 dd 5 ; Define una doble palabra (32 bits) con el valor
+5
+msg_igual db "Los valores son iguales.", 0ah ; Mensaje si son
+iguales, 0ah es salto de línea
+len_igual equ $-msg_igual ; Longitud del mensaje
+(etiqueta 'equ' para constante)
+msg_distinto db "Los valores son distintos.", 0ah ; Mensaje si
+son distintos
+len_distinto equ $-msg_distinto ; Longitud del segundo
+mensaje
+section .text
+; Sección que contiene el código ejecutable
+global _start ; El linker busca esta etiqueta como punto de
+entrada
+_start:
+; 1. Cargar y comparar valores
+mov eax, [valor1] ; Mueve el contenido de 'valor1' (5) al
+registro EAX
+mov ebx, [valor2] ; Mueve el contenido de 'valor2' (5) al
+registro EBX
+
+cmp eax, ebx ; Compara el contenido de EAX y EBX.
+; Esto establece los flags del registro de estado (ZF,
+
+CF, etc.).
+; 2. Salto Condicional
+je son_iguales ; **JUMP IF EQUAL** (Salta si el Flag Cero
+(ZF) está activado,
+
+; lo que ocurre si EAX = EBX después de CMP).
+; 3. Código si son DISTINTOS (ejecución por defecto)
+mov edx, len_distinto ; Longitud del mensaje de distinto
+mov ecx, msg_distinto ; Dirección del mensaje de distinto
+mov ebx, 1 ; Descriptor de archivo (1 = stdout)
+mov eax, 4 ; Número de syscall (4 = sys_write)
+int 0x80 ; Invoca la llamada al sistema (imprime el
+mensaje)
+jmp salir ; Salta incondicionalmente a 'salir' para evitar
+
+; ejecutar el bloque 'son_iguales'.
+
+son_iguales:
+; 4. Código si son IGUALES (destino del salto)
+mov edx, len_igual ; Longitud del mensaje de igual
+mov ecx, msg_igual ; Dirección del mensaje de igual
+mov ebx, 1 ; Descriptor de archivo (1 = stdout)
+mov eax, 4 ; Número de syscall (4 = sys_write)
+int 0x80 ; Invoca la llamada al sistema (imprime el
+mensaje)
+salir:
+; 5. Terminación del programa
+mov ebx, 0 ; Código de salida (0 = éxito)
+mov eax, 1 ; Número de syscall (1 = sys_exit)
+int 0x80 ; Invoca la llamada al sistema (termina el
+proceso)
