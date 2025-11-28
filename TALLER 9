@@ -1,0 +1,92 @@
+TALLER 9 
+section .data
+num1 db 5 ; Define una variable de byte (8 bits) con valor 5
+num2 db 11 ; Define una variable de byte (8 bits) con valor 11
+result db 0 ; Variable para almacenar el resultado de la suma
+
+msg db 'Resultado: ', 0 ; Mensaje de texto a imprimir (el 0 es
+terminador de cadena)
+section .bss
+buffer resb 4 ; Reserva 4 bytes de memoria sin inicializar (para
+almacenar la salida)
+section .text
+global _start ; Define _start como el punto de entrada para el linker
+_start:
+mov al, [num1] ; Mueve el valor del byte en la dirección de 'num1' (5)
+al registro AL (parte baja de EAX).
+add al, [num2] ; Suma el valor del byte en la dirección de 'num2' (11)
+al registro AL. AL = 5 + 11 = 16 (0x10).
+mov [result], al; Almacena el resultado (16) en la dirección de
+memoria de 'result'.
+; Convertir el resultado a ASCII
+movzx eax, byte [result] ; Mueve el byte de 'result' (16) a EAX,
+extendiendo con ceros los 24 bits superiores de EAX. EAX = 16.
+add eax, 48 ; Suma 48 (valor ASCII del carácter '0') al EAX. EAX =
+16 + 48 = 64 (valor ASCII de '@').
+mov [buffer], al; Almacena el byte bajo de EAX (AL = 64) en la
+dirección de memoria de 'buffer'.
+; Llamada al sistema (sys_write) para imprimir el mensaje 'Resultado:
+'
+mov eax, 4 ; sys_write (número de la syscall)
+mov ebx, 1 ; File descriptor (1 = stdout/pantalla)
+mov ecx, msg ; Dirección del mensaje a imprimir
+mov edx, 11 ; Longitud del mensaje (11 bytes)
+int 0x80 ; Invoca la syscall
+; Llamada al sistema (sys_write) para imprimir el carácter resultante
+mov eax, 4 ; sys_write
+mov ebx, 1 ; stdout
+mov ecx, buffer ; Dirección del buffer que contiene el carácter ASCII
+mov edx, 1 ; Longitud del carácter (1 byte)
+int 0x80 ; Invoca la syscall
+
+; Llamada al sistema (sys_exit) para terminar el programa
+mov eax, 1 ; sys_exit
+xor ebx, ebx ; Borra EBX (código de retorno 0)
+int 0x80 ; Invoca la syscall
+
+; Convertir el resultado a ASCII
+movzx eax, byte [result] ; EAX = 16
+add eax, 49 ; MODIFICADO: 49 (Valor ASCII de 'A' = 65) - 16 = 49
+; Ahora EAX = 16 + 49 = 65, que es el carácter 'A'.
+mov [buffer], al
+
+; ... (rest of the code is unchanged)
+
+section .data
+num1 db 5
+num2 db 11
+result db 0
+msg db 'Resultado: ', 0
+section .bss
+buffer resb 4
+section .text
+global _start
+_start:
+
+; CÁLCULO ORIGINAL (Produce 16 en AL)
+mov al, [num1]
+add al, [num2]
+mov [result], al
+; *** MODIFICACIÓN: USO DE DIRECCIONAMIENTO INDIRECTO
+POR REGISTRO ***
+mov esi, result ; ESI se carga con la dirección de 'result'.
+movzx eax, byte [esi] ; [Direccionamiento Indirecto] Accede al valor de
+'result' a través de ESI. EAX = 16.
+add eax, 48 ; EAX = 16 + 48 = 64 ('@')
+mov esi, buffer ; ESI se carga con la dirección de 'buffer'.
+mov [esi], al ; [Direccionamiento Indirecto] Almacena el resultado
+en 'buffer' a través de ESI.
+; IMPRESIÓN Y TERMINACIÓN (Igual que el código original)
+mov eax, 4
+mov ebx, 1
+mov ecx, msg
+mov edx, 11
+int 0x80
+mov eax, 4
+mov ebx, 1
+mov ecx, buffer
+mov edx, 1
+int 0x80
+mov eax, 1
+xor ebx, ebx
+int 0x80
